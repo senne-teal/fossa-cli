@@ -463,7 +463,7 @@ print_telemetry_disclaimer() {
 }
 
 PROJECT_NAME="fossa"
-OWNER=fossas
+OWNER=senne-teal
 REPO="fossa-cli"
 FORMAT=zip
 OS=$(uname_os)

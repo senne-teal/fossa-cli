@@ -27,7 +27,7 @@ Write-Host "Please upgrade to the latest FOSSA CLI."
 Write-host "`n"
 Write-Host "Please upgrade to FOSSA CLI v3 by using install-latest script:"
 Write-Host "--------------------------------------------------------------"
-Write-Host "    Set-ExecutionPolicy Bypass -Scope Process -Force; iex  ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.ps1'))"
+Write-Host "    Set-ExecutionPolicy Bypass -Scope Process -Force; iex  ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/senne-teal/fossa-cli/master/install-latest.ps1'))"
 Write-host "`n"
 Write-Host "Migration guide for FOSSA CLI v3:"
 Write-Host "---------------------------------"
@@ -36,7 +36,7 @@ Write-host "`n"
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
-$downloadPath = "fossas/fossa-cli/releases/download/$($release_v1_upperbound)/fossa-cli_$($releaseVersionSemver)_windows_amd64.zip"
+$downloadPath = "senne-teal/fossa-cli/releases/download/$($release_v1_upperbound)/fossa-cli_$($releaseVersionSemver)_windows_amd64.zip"
 $downloadUri = "$github/$downloadPath"
 Write-Verbose "Downloading from: $downloadUri"
 

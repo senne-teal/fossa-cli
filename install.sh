@@ -370,7 +370,7 @@ print_deprecation_warning() {
 }
 
 PROJECT_NAME="fossa-cli"
-OWNER=fossas
+OWNER=senne-teal
 REPO="fossa-cli"
 FORMAT=tar.gz
 OS=$(uname_os)

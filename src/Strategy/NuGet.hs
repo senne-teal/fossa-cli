@@ -26,15 +26,15 @@ import Discovery.Walk (
   findFileNamed,
   walkWithFilters',
  )
-import Effect.ReadFS (ReadFS)
+import Effect.ReadFS (ReadFS, doesFileExist)
 import GHC.Generics (Generic)
-import Path (Abs, Dir, File, Path, parent)
+import Path (Abs, Dir, File, Path, mkRelDir, mkRelFile, parent, (</>))
 import Strategy.NuGet.PackageReference qualified as PackageReference
 import Strategy.NuGet.ProjectAssetsJson qualified as ProjectAssetsJson
 import Types (
   DependencyResults (..),
   DiscoveredProject (..),
-  DiscoveredProjectType (NuGetProjectType),
+  DiscoveredProjectType (NuGetProjectType, PackageReferenceProjectType, ProjectAssetsJsonProjectType),
  )
 
 discover ::
@@ -47,11 +47,17 @@ discover ::
 discover = simpleDiscover findProjects mkProject NuGetProjectType
 
 findProjects :: (Has ReadFS sig m, Has Diagnostics sig m, Has (Reader AllFilters) sig m) => Path Abs Dir -> m [NuGetProject]
-findProjects = walkWithFilters' $ \_ _ files -> do
+findProjects = walkWithFilters' $ \dir _ files -> do
   case findProjectAssetsJsonFile files of
     Just file -> pure ([NuGetProject file], WalkContinue)
     Nothing -> case find isPackageRefFile files of
-      Just file -> pure ([NuGetProject file], WalkContinue)
+      Just file -> do
+        -- Check if obj/project.assets.json exists
+        let objAssetsPath = dir </> $(mkRelDir "obj") </> $(mkRelFile "project.assets.json")
+        hasObjAssets <- doesFileExist objAssetsPath
+        if hasObjAssets
+          then pure ([], WalkContinue) -- Skip .csproj, will find assets.json later
+          else pure ([NuGetProject file], WalkContinue) -- Use .csproj
       Nothing -> pure ([], WalkContinue)
   where
     findProjectAssetsJsonFile :: [Path Abs File] -> Maybe (Path Abs File)
@@ -63,11 +69,16 @@ findProjects = walkWithFilters' $ \_ _ files -> do
 mkProject :: NuGetProject -> DiscoveredProject NuGetProject
 mkProject project =
   DiscoveredProject
-    { projectType = NuGetProjectType
+    { projectType = determineProjectType (nugetProjectFile project)
     , projectPath = parent $ nugetProjectFile project
     , projectBuildTargets = mempty
     , projectData = project
     }
+  where
+    determineProjectType :: Path Abs File -> DiscoveredProjectType
+    determineProjectType file
+      | fileName file == "project.assets.json" = ProjectAssetsJsonProjectType
+      | otherwise = PackageReferenceProjectType
 
 newtype NuGetProject = NuGetProject
   { nugetProjectFile :: Path Abs File
